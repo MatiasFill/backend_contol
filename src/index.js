@@ -1,4 +1,7 @@
 
+
+
+/*
 const express = require('express');
 const cors = require('cors');
 const db = require('./db');
@@ -75,10 +78,10 @@ if (process.env.NODE_ENV !== 'production') {
 // Exporta a aplicação Express
 module.exports = app;
 
+*/
 
 
 
-/* desta forma ele fica visivel para o cliente, esta com erro.
 const express = require('express');
 const cors = require('cors');
 const db = require('./db');
@@ -149,4 +152,3 @@ app.delete('/api/products/:id', async (req, res) => {
 app.listen(port, () => {
   console.log(`Servidor backend rodando em http://localhost:${port}`);
 });
-*/
