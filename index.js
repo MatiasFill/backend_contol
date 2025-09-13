@@ -3,7 +3,6 @@ const cors = require('cors');
 const db = require('./db');
 
 const app = express();
-const port = 3000;
 
 // Middleware para habilitar o CORS (permite que o frontend se conecte)
 app.use(cors());
@@ -64,11 +63,16 @@ app.delete('/api/products/:id', async (req, res) => {
   }
 });
 
-// Remove a linha "app.listen()" para que o Vercel possa usar a aplicação
-// e exporta a aplicação Express
+// Adiciona a porta apenas para o ambiente local
+const port = 3000;
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Servidor backend rodando em http://localhost:${port}`);
+  });
+}
+
+// Exporta a aplicação Express
 module.exports = app;
-
-
 
 
 /* desta forma ele fica visivel para o cliente, esta com erro.
