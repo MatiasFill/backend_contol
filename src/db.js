@@ -1,3 +1,6 @@
+
+
+/* esta estava em uso.
 import pkg from "pg";
 import dotenv from "dotenv";
 
@@ -20,9 +23,9 @@ export default pool;
 export const query = (text, params) => pool.query(text, params);
 
 
+*/
 
 
-/*
 import pg from "pg";
 import dotenv from "dotenv";
 
@@ -51,4 +54,3 @@ pool.connect((err, client, release) => {
 
 export default pool;
 
-*/

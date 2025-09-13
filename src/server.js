@@ -74,9 +74,14 @@ app.use('/products', productRoutes);
 // Configura a porta do servidor para rodar tanto localmente quanto na Vercel
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-});
+if (process.env.VERCEL_ENV) {
+  module.exports = app;
+} else {
+  const port = 3000;
+  app.listen(port, () => {
+    console.log(`Servidor backend rodando em http://localhost:${port}`);
+  });
+}
 
 
 
