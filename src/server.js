@@ -1,4 +1,4 @@
-/*
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -84,11 +84,11 @@ if (process.env.VERCEL_ENV) {
   });
 }
 
-*/
+
 
 
 // o segundo
-
+/*
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -129,7 +129,7 @@ if (process.env.VERCEL_ENV) {
   });
 }
 
-
+*/
 // o primeiro
 /*
 import express from 'express';
