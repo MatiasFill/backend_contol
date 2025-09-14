@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
-import pool from './db.js'; // Importa a conexão do seu arquivo db.js
+import pool from './db.cjs'; // Importa a conexão do seu arquivo db.js
 
 import productRoutes from './routes/productRoutes.js';
 

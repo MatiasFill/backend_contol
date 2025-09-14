@@ -1,6 +1,7 @@
-const express = require('express');
-const cors = require('cors');
-const db = require('./db');
+import express from 'express';
+import cors from 'cors';
+
+const db = require('./db.cjs');
 
 const app = express();
 

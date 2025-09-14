@@ -1,4 +1,4 @@
-import { query } from "../db.js";
+import { query } from "../db.cjs";
 
 // Busca todos os produtos
 export const getAllProducts = async () => {
