@@ -1,3 +1,15 @@
+const { Pool } = require('pg');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+// Cria o pool de conexões
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+// Exporta para ser usado no server.cjs
+module.exports = pool;
 
 
 /* esta estava em uso.
@@ -25,7 +37,7 @@ export const query = (text, params) => pool.query(text, params);
 
 */
 
-
+/*
 import pg from "pg";
 import dotenv from "dotenv";
 
@@ -54,3 +66,4 @@ pool.connect((err, client, release) => {
 
 export default pool;
 
+*/
