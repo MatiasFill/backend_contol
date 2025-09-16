@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "Backend para controle de estoque com Node.js, Express e PostgreSQL",
   "main": "src/server.cjs",
+  "type": "commonjs",
   "scripts": {
     "start": "node src/server.cjs",
     "dev": "nodemon src/server.cjs"
   },
+  
   "keywords": [],
   "author": "Matias",
   "license": "MIT",
@@ -19,5 +21,9 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
-  }
+  },
+
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/server.cjs" }
+  ]
 }
