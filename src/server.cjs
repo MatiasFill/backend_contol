@@ -65,13 +65,13 @@ app.post('/login', (req, res) => {
 
 // --- Rota Protegida ---
 // Esta rota só pode ser acessada com um token JWT válido
-app.get('/products/secure', authMiddleware, async (req, res) => {
+app.get('/api/products/secure', authMiddleware, async (req, res) => {
     // Apenas para demonstração, retorna uma mensagem de sucesso
     res.json({ message: 'Acesso autorizado à rota segura!', user: req.user });
 });
 
 // Rotas da API
-app.use('/products', productRoutes);
+app.use('/api/products', productRoutes);
 
 // Configura a porta do servidor para rodar tanto localmente quanto na Vercel
 const PORT = process.env.PORT || 3000;
