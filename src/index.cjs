@@ -68,7 +68,7 @@ app.delete('/api/products/:id', async (req, res) => {
 const port = 3000;
 if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => {
-    console.log(`Servidor backend rodando em http://localhost:${port}`);
+    console.log(`Servidor backend rodando em https://localhost:${port}`);
   });
 }
 

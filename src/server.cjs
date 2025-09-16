@@ -81,7 +81,7 @@ if (process.env.VERCEL_ENV) {
 } else {
     const port = 3000;
     app.listen(port, () => {
-        console.log(`Servidor backend rodando em http://localhost:${port}`);
+        console.log(`Servidor backend rodando em https://localhost:${port}`);
     });
 }
 
