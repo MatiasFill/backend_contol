@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 
 const db = require('./db.cjs');
-const app = require('./server.cjs'); // Importa o app do server.cjs para evitar conflito de portas
+const app = require('./server.cjs'); 
 const app = express();
 
 // Middleware para habilitar o CORS (permite que o frontend se conecte)

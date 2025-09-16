@@ -1,86 +1,3 @@
-// Importa módulos necessários
-const dotenv = require('dotenv');
-const jwt = require('jsonwebtoken');
-const express = require('express');
-const cors = require('cors');
-
-// Importa módulos locais
-const pool = require('./db.cjs');
-const productRoutes = require('./routes/productRoutes.js');
-
-// Carrega variáveis de ambiente
-dotenv.config();
-
-const app = express();
-
-// Middlewares
-app.use(express.json());
-app.use(cors());
-
-// Testa conexão com o banco
-pool.connect((err, client, release) => {
-  if (err) {
-    return console.error("Erro ao conectar ao banco", err.stack);
-  }
-  client.release();
-  console.log("Conexão com o banco de dados bem-sucedida!");
-});
-
-// Middleware de autenticação com JWT
-const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Espera "Bearer TOKEN"
-
-  if (!token) {
-    return res.status(401).json({ message: 'Nenhum token fornecido.' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: 'Token inválido.' });
-  }
-};
-
-// --- Rotas ---
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-
-  if (username === 'admin' && password === 'rms-1907') {
-    const token = jwt.sign(
-      { id: '123', username: 'admin' },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-    return res.json({ token });
-  }
-
-  res.status(401).json({ message: 'Credenciais inválidas' });
-});
-
-// Rota protegida
-app.get('/api/products/secure', authMiddleware, (req, res) => {
-  res.json({ message: 'Acesso autorizado!', user: req.user });
-});
-
-// Rotas de produtos (CRUD)
-app.use('/api/products', productRoutes);
-
-// Exporta o app (para o Vercel usar)
-module.exports = app;
-
-// Só escuta localmente fora do Vercel
-if (!process.env.VERCEL_ENV) {
-  const port = process.env.PORT || 3000;
-  app.listen(port, () => {
-    console.log(`Servidor backend rodando em http://localhost:${port}`);
-  });
-}
-
-
-
-/*
 // Importa os módulos necessários usando a sintaxe CommonJS
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
@@ -164,11 +81,11 @@ if (process.env.VERCEL_ENV) {
 } else {
     const port = 3000;
     app.listen(port, () => {
-        console.log(`Servidor backend rodando em https://localhost:${port}`);
+        console.log(`Servidor backend rodando em http://localhost:${port}`);
     });
 }
 
-*/
+
 
 /*
 import dotenv from 'dotenv';
