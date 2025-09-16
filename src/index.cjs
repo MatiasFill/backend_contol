@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 
 const db = require('./db.cjs');
-const app = require('./server.cjs'); 
+
 const app = express();
 
 // Middleware para habilitar o CORS (permite que o frontend se conecte)
@@ -68,7 +68,7 @@ app.delete('/api/products/:id', async (req, res) => {
 const port = 3000;
 if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => {
-    console.log(`Servidor backend rodando em https://localhost:${port}`);
+    console.log(`Servidor backend rodando em http://localhost:${port}`);
   });
 }
 
