@@ -1,14 +1,22 @@
 {
-  "name": "controle_estoque_backend",
+  "name": "estoque-backend",
   "version": "1.0.0",
   "description": "Backend para controle de estoque com Node.js, Express e PostgreSQL",
   "main": "src/server.cjs",
   "scripts": {
     "start": "node src/server.cjs",
     "dev": "nodemon src/server.cjs",
-    "type": "module"
+    "type": "commonjs"
   },
-  "keywords": [],
+   "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+     "express",
+    "postgresql",
+    "jwt",
+    "estoque"
+  ],
   "author": "Matias",
   "license": "MIT",
   "dependencies": {
