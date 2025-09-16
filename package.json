@@ -5,7 +5,8 @@
   "main": "src/server.cjs",
   "scripts": {
     "start": "node src/server.cjs",
-    "dev": "nodemon src/server.cjs"
+    "dev": "nodemon src/server.cjs",
+    "type": "module"
   },
   "keywords": [],
   "author": "Matias",
