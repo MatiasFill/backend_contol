@@ -1,28 +1,22 @@
-// src/index.js
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import pg from 'pg';
 import jwt from 'jsonwebtoken';
+import pool from './db.js'; // agora funciona
 
 dotenv.config();
 
-const { Pool } = pg;
-const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV;
-
-// Configura pool do PostgreSQL
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: isProduction ? { rejectUnauthorized: false } : false,
-});
-
 const app = express();
+const isProduction = !!process.env.VERCEL_ENV;
 
-// Middleware
+// CORS
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: isProduction
+    ? process.env.FRONTEND_URL
+    : 'http://localhost:5173',
   credentials: true
 }));
+
 app.use(express.json());
 
 // --- Health check ---
@@ -41,17 +35,17 @@ app.get('/db-check', async (req, res) => {
   }
 });
 
-// --- Middleware de autenticação JWT ---
+// --- JWT middleware ---
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]; // Bearer TOKEN
-  if (!token) return res.status(401).json({ message: 'Autenticação falhou: Nenhum token fornecido.' });
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'Nenhum token fornecido' });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
-  } catch (error) {
-    return res.status(401).json({ message: 'Autenticação falhou: Token inválido.' });
+  } catch (err) {
+    res.status(401).json({ message: 'Token inválido' });
   }
 };
 
@@ -67,12 +61,10 @@ app.post('/login', (req, res) => {
 
 // --- Rota segura ---
 app.get('/api/products/secure', authMiddleware, (req, res) => {
-  res.json({ message: 'Acesso autorizado à rota segura!', user: req.user });
+  res.json({ message: 'Acesso autorizado!', user: req.user });
 });
 
-// --- CRUD de produtos ---
-
-// GET all products
+// --- CRUD Produtos ---
 app.get('/api/products', async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT * FROM products ORDER BY name ASC');
@@ -83,11 +75,10 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-// POST new product
 app.post('/api/products', async (req, res) => {
   const { name, sku, quantity, price } = req.body;
   if (!name || !sku || quantity === undefined || price === undefined) {
-    return res.status(400).json({ message: 'Todos os campos (name, sku, quantity, price) são obrigatórios.' });
+    return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
   }
   try {
     const { rows } = await pool.query(
@@ -101,12 +92,11 @@ app.post('/api/products', async (req, res) => {
   }
 });
 
-// PUT update product
 app.put('/api/products/:id', async (req, res) => {
   const { id } = req.params;
   const { name, sku, quantity, price } = req.body;
   if (!name || !sku || quantity === undefined || price === undefined) {
-    return res.status(400).json({ message: 'Todos os campos (name, sku, quantity, price) são obrigatórios.' });
+    return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
   }
   try {
     await pool.query(
@@ -120,7 +110,6 @@ app.put('/api/products/:id', async (req, res) => {
   }
 });
 
-// DELETE product
 app.delete('/api/products/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -132,96 +121,15 @@ app.delete('/api/products/:id', async (req, res) => {
   }
 });
 
-// --- Porta local ---
+// Porta local
 const PORT = process.env.PORT || 3000;
-if (!process.env.VERCEL_ENV) {
-  app.listen(PORT, () => console.log(`Servidor backend rodando em http://localhost:${PORT}`));
+if (!isProduction) {
+  app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
 }
 
 // Export para Vercel
 export default app;
 
-
-
-/*
-import express from 'express';
-import cors from 'cors';
-
-const db = require('./db.js');
-
-const app = express();
-
-// Middleware para habilitar o CORS (permite que o frontend se conecte)
-app.use(cors());
-// Middleware para analisar o corpo das requisições JSON
-app.use(express.json());
-
-// Rota GET para buscar todos os produtos
-app.get('/api/products', async (req, res) => {
-  try {
-    const { rows } = await db.query('SELECT * FROM products ORDER BY name ASC');
-    res.json(rows);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Erro no servidor');
-  }
-});
-
-// Rota POST para adicionar um novo produto
-app.post('/api/products', async (req, res) => {
-  try {
-    const { name, sku, quantity, price } = req.body;
-    const { rows } = await db.query(
-      'INSERT INTO products (name, sku, quantity, price) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name, sku, quantity, price]
-    );
-    res.status(201).json(rows[0]);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Erro no servidor');
-  }
-});
-
-// Rota PUT para atualizar um produto
-app.put('/api/products/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, sku, quantity, price } = req.body;
-    await db.query(
-      'UPDATE products SET name = $1, sku = $2, quantity = $3, price = $4 WHERE id = $5',
-      [name, sku, quantity, price, id]
-    );
-    res.json({ message: 'Produto atualizado com sucesso' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Erro no servidor');
-  }
-});
-
-// Rota DELETE para remover um produto
-app.delete('/api/products/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    await db.query('DELETE FROM products WHERE id = $1', [id]);
-    res.json({ message: 'Produto excluído com sucesso' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Erro no servidor');
-  }
-});
-
-// Adiciona a porta apenas para o ambiente local
-const port = 3000;
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(port, () => {
-    console.log(`Servidor backend rodando em http://localhost:${port}`);
-  });
-}
-
-// Exporta a aplicação Express
-module.exports = app;
-
-*/
 
 /*
 import express from 'express';
