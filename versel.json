@@ -3,6 +3,7 @@
   "builds": [
     {
       "src": "src/index.cjs",
+      
       "use": "@vercel/node"
     }
   ],
