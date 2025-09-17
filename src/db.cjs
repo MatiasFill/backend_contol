@@ -3,6 +3,23 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // necessário para Neon / Vercel
+  },
+});
+
+module.exports = pool;
+
+
+
+/*
+const { Pool } = require('pg');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
 // Cria o pool de conexões
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -10,7 +27,7 @@ const pool = new Pool({
 
 // Exporta para ser usado no server.cjs
 module.exports = pool;
-
+*/
 
 /* esta estava em uso.
 import pkg from "pg";
