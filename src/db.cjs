@@ -3,11 +3,13 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false, // necessário para Neon / Vercel
-  },
+  ssl: isProduction
+    ? { rejectUnauthorized: false } // produção no Vercel (Neon exige SSL)
+    : false,                        // local: SSL desativado
 });
 
 module.exports = pool;
