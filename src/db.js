@@ -1,15 +1,14 @@
+// src/db.js
 const { Pool } = require('pg');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: isProduction
-    ? { rejectUnauthorized: false } // produção no Vercel (Neon exige SSL)
-    : false,                        // local: SSL desativado
+  ssl: isProduction ? { rejectUnauthorized: false } : false, // SSL no Vercel, desativado local
 });
 
 module.exports = pool;

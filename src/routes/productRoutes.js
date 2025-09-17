@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../db.cjs'); // ou './db.js' se renomeou
+const pool = require('../db.js'); // ou './db.js' se renomeou
 
 // --- Listar todos os produtos ---
 router.get('/', async (req, res) => {
