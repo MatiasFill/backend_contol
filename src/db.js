@@ -1,5 +1,35 @@
 import pg from 'pg';
 import dotenv from 'dotenv';
+
+dotenv.config();
+
+const { Pool } = pg;
+const isProduction = !!process.env.VERCEL_ENV;
+
+// Configuração da pool de conexões
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL, // URL do banco do Vercel/PostgreSQL
+  ssl: isProduction
+    ? { rejectUnauthorized: false } // produção Vercel requer SSL, mas sem checagem de certificado
+    : false,                        // dev local não precisa de SSL
+});
+
+// Teste rápido da conexão (opcional)
+pool.on('connect', () => {
+  console.log('Conectado ao PostgreSQL ✅');
+});
+
+pool.on('error', (err) => {
+  console.error('Erro na conexão com o PostgreSQL ❌', err);
+});
+
+export default pool; // export default para ESM
+
+
+
+/*
+import pg from 'pg';
+import dotenv from 'dotenv';
 dotenv.config();
 
 const { Pool } = pg;
@@ -12,7 +42,7 @@ const pool = new Pool({
 
 export default pool; // export default para ESM
 
-
+*/
 
 /*
 const { Pool } = require('pg');
