@@ -11,7 +11,7 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL, // URL do banco do Vercel/PostgreSQL
   ssl: isProduction
     ? { rejectUnauthorized: false } // produção Vercel requer SSL, mas sem checagem de certificado
-    : false,                        // dev local não precisa de SSL
+    : false,                        // dev local não precisa de SSL
 });
 
 // Teste rápido da conexão (opcional)
