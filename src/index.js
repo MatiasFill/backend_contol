@@ -2,25 +2,22 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import pool from "./db.js"; // Importa a conexão com o PostgreSQL
+import pool from "./db.js"; // conexão com o PostgreSQL
 
 dotenv.config();
 
 const app = express();
 const isProduction = !!process.env.VERCEL_ENV;
 
-// --- Configuração e Middleware ---
-
-// Configuração de CORS para permitir requisições apenas de origens específicas.
+// --- CORS ---
 const allowedOrigins = [
-  process.env.FRONTEND_URL, // Ex: https://seu-frontend-em-producao.vercel.app
-  "http://localhost:5173", 
+  process.env.FRONTEND_URL, // frontend em produção
+  "http://localhost:5173"   // dev local
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Permite requisições sem 'origin' (ex: de ferramentas como Postman) e das origens permitidas.
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, origin);
       } else {
@@ -33,18 +30,18 @@ app.use(
   })
 );
 
-// Responde a requisições 'preflight' para qualquer rota.
+// responder preflight para qualquer rota
 app.options("*", cors());
 
-// Habilita o uso de JSON nas requisições.
+// --- JSON parsing ---
 app.use(express.json());
 
-// --- Rotas de Monitoramento e Saúde da Aplicação ---
-
+// --- Health check ---
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "API rodando 🚀" });
 });
 
+// --- DB check ---
 app.get("/db-check", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
@@ -54,7 +51,7 @@ app.get("/db-check", async (req, res) => {
       message: "Banco funcionando ✅",
     });
   } catch (err) {
-    console.error("Falha na conexão com o banco:", err.message);
+    console.error(err.message);
     res.status(500).json({
       status: "error",
       message: "Falha na conexão com o banco ❌",
@@ -63,27 +60,23 @@ app.get("/db-check", async (req, res) => {
   }
 });
 
-// --- Middleware de Autenticação JWT ---
-
+// --- JWT middleware ---
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token)
-    return res.status(401).json({ message: "Nenhum token de autenticação fornecido" });
+    return res.status(401).json({ message: "Nenhum token fornecido" });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // Adiciona os dados do usuário ao objeto de requisição
-    next(); // Passa o controle para a próxima rota ou middleware
+    req.user = decoded;
+    next();
   } catch (err) {
-    res.status(401).json({ message: "Token inválido ou expirado" });
+    res.status(401).json({ message: "Token inválido" });
   }
 };
 
-// --- Rota de Login (apenas para exemplo) ---
-
+// --- Login ---
 app.post("/login", (req, res) => {
-  // ATENÇÃO: Credenciais hardcoded são um risco de segurança grave.
-  // Em uma aplicação real, use um banco de dados e criptografia de senhas.
   const { username, password } = req.body;
   if (username === "admin" && password === "rms-1907") {
     const token = jwt.sign(
@@ -96,27 +89,25 @@ app.post("/login", (req, res) => {
   res.status(401).json({ message: "Credenciais inválidas" });
 });
 
-// --- Rota Segura de Exemplo ---
-
+// --- Rota segura ---
 app.get("/api/products/secure", authMiddleware, (req, res) => {
   res.json({ message: "Acesso autorizado!", user: req.user });
 });
 
-// --- Rotas CRUD de Produtos ---
-
-// READ: Retorna todos os produtos
+// --- CRUD Produtos ---
 app.get("/api/products", async (req, res) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM products ORDER BY name ASC");
+    const { rows } = await pool.query(
+      "SELECT * FROM products ORDER BY name ASC"
+    );
     res.json(rows);
   } catch (err) {
-    console.error("Erro ao buscar produtos:", err.message);
-    res.status(500).send("Erro no servidor ao buscar produtos");
+    console.error(err.message);
+    res.status(500).send("Erro no servidor");
   }
 });
 
-// CREATE: Adiciona um novo produto (protegido por autenticação)
-app.post("/api/products", authMiddleware, async (req, res) => {
+app.post("/api/products", async (req, res) => {
   const { name, sku, quantity, price } = req.body;
   if (!name || !sku || quantity === undefined || price === undefined) {
     return res
@@ -130,13 +121,12 @@ app.post("/api/products", authMiddleware, async (req, res) => {
     );
     res.status(201).json(rows[0]);
   } catch (err) {
-    console.error("Erro ao adicionar produto:", err.message);
-    res.status(500).send("Erro no servidor ao adicionar produto");
+    console.error(err.message);
+    res.status(500).send("Erro no servidor");
   }
 });
 
-// UPDATE: Atualiza um produto existente (protegido por autenticação)
-app.put("/api/products/:id", authMiddleware, async (req, res) => {
+app.put("/api/products/:id", async (req, res) => {
   const { id } = req.params;
   const { name, sku, quantity, price } = req.body;
   if (!name || !sku || quantity === undefined || price === undefined) {
@@ -145,37 +135,29 @@ app.put("/api/products/:id", authMiddleware, async (req, res) => {
       .json({ message: "Todos os campos são obrigatórios." });
   }
   try {
-    const { rowCount } = await pool.query(
+    await pool.query(
       "UPDATE products SET name = $1, sku = $2, quantity = $3, price = $4 WHERE id = $5",
       [name, sku, quantity, price, id]
     );
-    if (rowCount === 0) {
-      return res.status(404).json({ message: "Produto não encontrado." });
-    }
     res.json({ message: "Produto atualizado com sucesso" });
   } catch (err) {
-    console.error("Erro ao atualizar produto:", err.message);
-    res.status(500).send("Erro no servidor ao atualizar produto");
+    console.error(err.message);
+    res.status(500).send("Erro no servidor");
   }
 });
 
-// DELETE: Exclui um produto (protegido por autenticação)
-app.delete("/api/products/:id", authMiddleware, async (req, res) => {
+app.delete("/api/products/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const { rowCount } = await pool.query("DELETE FROM products WHERE id = $1", [id]);
-    if (rowCount === 0) {
-      return res.status(404).json({ message: "Produto não encontrado." });
-    }
+    await pool.query("DELETE FROM products WHERE id = $1", [id]);
     res.json({ message: "Produto excluído com sucesso" });
   } catch (err) {
-    console.error("Erro ao excluir produto:", err.message);
-    res.status(500).send("Erro no servidor ao excluir produto");
+    console.error(err.message);
+    res.status(500).send("Erro no servidor");
   }
 });
 
-// --- Inicialização do Servidor ---
-
+// --- Porta local para dev ---
 if (!isProduction) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () =>
@@ -183,8 +165,9 @@ if (!isProduction) {
   );
 }
 
-// Exporta o aplicativo Express para ser usado pela Vercel.
+// --- Export para Vercel ---
 export default app;
+
 
 
 
